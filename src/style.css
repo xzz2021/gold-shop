@@ -1,0 +1,23 @@
+
+
+#injectReact{
+    position: fixed;
+    top: 200px;
+    left: 20px;
+    z-index: 9999;
+    width: 200px;
+    height: 160px;
+    background: #fff;
+    border: 1px solid black;
+    border-radius: 6px;
+}
+
+
+.App{
+    margin: 10px;
+    background-color: #72f162;
+}
+
+.xzzBtn{
+    margin: 0 auto;
+}

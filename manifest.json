@@ -1,0 +1,28 @@
+{
+  "name": "xzz-淘宝优质商家",
+  "description": "用于搜索指定数量商品数的淘宝店铺!",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "background": { 
+    "service_worker": "background.js" 
+  },
+  "permissions": ["storage", "activeTab", "tabs","scripting"],
+  "action": {
+    "default_title": "popup.html",
+    "default_icon": "logo.png",
+    "default_popup": "popup.html"
+  },
+  "icons": { "16": "logo.png", "48": "logo.png", "128": "logo.png" },
+  "content_scripts": [
+    {
+      "matches": ["https://s.taobao.com/*"],
+      "js": ["/content.js"]
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["/inject.js","/content.js", "/content.js.map" ],
+    "matches": ["<all_urls>"]
+  }],
+  "homepage_url": "https://github.com/xzz2021"
+}
+
