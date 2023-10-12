@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 
+import OperateApp from "./operate"
+
 function App() {
   // $('#App').
   const [inputValue, setInputValue ] = useState('')
@@ -36,7 +38,7 @@ function App() {
         <div className="xzzBtn">
             <button onClick={ confirm }>确定</button>
         </div>
-        
+        <OperateApp />
     </div>
   );
 }
