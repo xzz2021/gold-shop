@@ -7,6 +7,7 @@
     "service_worker": "background.js" 
   },
   "permissions": ["storage", "activeTab", "tabs","scripting", "cookies"],
+  "host_permissions": ["*://*.tmall.com/*"],
   "action": {
     "default_title": "popup.html",
     "default_icon": "logo.png",
@@ -15,7 +16,7 @@
   "icons": { "16": "logo.png", "48": "logo.png", "128": "logo.png" },
   "content_scripts": [
     {
-      "matches": ["https://s.taobao.com/*"],
+      "matches": ["https://*.taobao.com/*"],
       "js": ["/content.js"]
     }
   ],
