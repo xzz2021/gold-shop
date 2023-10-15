@@ -65,6 +65,7 @@ const OperateApp = () => {
         const newAllShops = await Promise.all(
             allShops.map( async item => {
                 if(item.shopType == 'taobao'){
+                    // window.open(item.shopUrl)
                     // 一. 获得商品页数据
                 let newItem =  await searchTB(item)
                 return newItem
