@@ -1,7 +1,7 @@
 //  此处封装获取淘宝店铺  商品数量方法
 
 import * as cheerio from 'cheerio'
-import  sendMessage  from './api'
+import  {sendMessage}  from './api'
 
 // item ={shopName, shopUrl, shopType}
 const wait = async (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -65,25 +65,15 @@ const searchTB = async (item) => {
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         }
     let itemPage = await sendMessage({type: 'myfetch', url: shopUrl, config: { responseType: 'GBKHTML', method: 'GET', headers}})
-    // console.log("🚀 ~ file: getTb.js:14 ~ searchTB ~ itemPage:", itemPage)
-    if(itemPage.ret){ 
-        item.msg = '哎哟喂,被挤爆啦,请稍后重试'
-        return item
-    }
-    if(itemPage.dialogSize){ 
-        item.msg = '需要登录'
-        return item
-    }
+
     if(typeof itemPage === 'string'){  // 当淘宝检测频繁触发反爬,需要登录  会返回对象 包含h5url 而不是html页面
 
-       
         const $ = cheerio.load(itemPage);
         // 如果出错,没有拿到数据
         let checkErr = $('title').text().includes('您查看的页面找不到了!')
         if(checkErr) {
             alert('请关闭页面重新打开,或者登录账号后重试!')
-            item.num = 0
-            return item
+            throw new Error('请关闭页面重新打开,或者登录账号后重试!')
         }
         // 2. 如果拿到商品页面数据  获取店铺首页 搜索页的数据
 
@@ -91,15 +81,15 @@ const searchTB = async (item) => {
         //  let shopUrl = window.g_config.idata.shop.url  只能使用字符串匹配   url :
         let shopUrl = itemPage.match(/(?<=url : ').*(?=\/')/)[0]
 
-        if(shopUrl === undefined ){ item.num = 0
-            return item}
+        if(shopUrl === undefined ){ 
+            throw new Error('找不到店铺搜索页url')
+        }
         const searchUrl = `https:${shopUrl}/search.htm`
 
         
         // 3.  获得搜索页结果后  
         wait(1)
         let searchPage = await sendMessage({type: 'myfetch', url: searchUrl, config: { responseType: 'GBKHTML', method: 'GET',}})
-        // console.log("🚀 ~ file: getTb.js:105 ~ searchTB ~ searchPage:", searchPage)
 
         // 3.1   还需 获取 异步数据  "/i/asynSearch.htm?input_charset=gbk&mid=w-2790737131-0&wid=2790737131&path=/search.htm&amp;search=y"
         // 核心参数 mid=w-2790737131-0  从而得到商品数量数据
@@ -112,17 +102,29 @@ const searchTB = async (item) => {
         // console.log("🚀 ~ file: getTb.js:116 ~ searchTB ~ sasyncPage:", sasyncPage)
          // 提取商品数字
         let strNum = asyncPage.match(/(?<=共搜索到<span>).*(?=<\/span>个符合条件的商品)/)[0]
-         console.log("🚀 ~ file: getTb.js:115 ~ searchTB ~ strNum:", strNum)
+        //  console.log("🚀 ~ file: getTb.js:115 ~ searchTB ~ strNum:", strNum)
          item.num = strNum.trim()
             // html 有乱码
-        item.msg = '意外错误'
-    return item
+        // item.msg = '意外错误'
+        return item
 
+    }else if (typeof itemPage === 'object') {
+    if(itemPage.ret){ 
+        alert('请求过于频繁,请过几分钟重试: 哎哟喂,被挤爆啦,请稍后重试')
+        throw new Error('请求过于频繁')
     }
-    
-    item.msg = '意外错误'
-    return item
+    if(itemPage.dialogSize){ 
+        alert('需要登录')
+        throw new Error('需要登录')
+    }
+
+    }else{
+        alert('意外错误')
+        throw new Error('意外错误')
+    }
 }
+    
+
 
 
 export default searchTB

@@ -27,46 +27,6 @@ window.addEventListener('xzz', (params)=> {
 
 
 
-const injectForBilibili = () => {
-
-
-//  b站覆写setTimeout
-const originSetTimeout = window.setTimeout;
-  window.setTimeout = function(func, delay) {
-    if (delay === 4e3) delay = 4e8;
-    if (delay === 3e4) delay = 10e10;
-    return originSetTimeout.call(this, func, delay);
-    }
-
-  const originSetItem = window.localStorage.setItem;
-  window.localStorage.setItem = function(key, value) {
-    // console.log("🚀 ~ file: inject.js:32 ~ coverSetItem ~ key:", key)
-    if (key === "bpx_player_profile") {
-      const profile = JSON.parse(value);
-      // profile.lastView = 0
-      profile.lastView = Date.now() - 864e5 
-      profile.media.quality = '80';
-    //   profile.media.autoplay = false;
-      value = JSON.stringify(profile);
-    }
-    // if(key === "bp_nc_sr22"){
-    //   const bp = JSON.parse(value);
-    // //   let curPro = window.localStorage.getItem("bpx_player_profile")
-    // //   let toObj = JSON.parse(curPro)
-    // //   let timestamp = toObj.lastView
-    // if(!bp) return
-    //   bp['117145140'].timestamp = 0
-    //   value = JSON.stringify(bp);
-    // }
-    originSetItem.call(this,key,value)
-  }
-}
-
-if(location.href.includes('bilibili.com/video')) {
-  injectForBilibili()
-}
-
-
 
 
 

@@ -2,10 +2,9 @@
 
 import $ from 'jquery'
 import { useEffect, useState } from 'react';
-import * as cheerio from 'cheerio'
-import  sendMessage  from './api'
 import falseRes from './test copy'
 import searchTB from './getTb'
+import searchTM from './getTm'
 // import falseRes2 from './test copy 2'
 const OperateApp = () => {
     
@@ -18,21 +17,34 @@ const OperateApp = () => {
         await wait(2)
         await goToBottomEase()
         await wait(1)
+
+        // 如果没有数据,重载页面
         let shopsArr = [] 
-        let skipItem = [ '天猫超市', '天天特卖工厂店', '苏宁易购官方旗舰店', "淘工厂官方店", "百亿补贴官方频道" ]
         const  eachDiv = $('.Content--content--sgSCZ12 .Content--contentInner--QVTcU0M > div')
-        if(eachDiv.length == 0 || !eachDiv) return shopsArr
+        // if(eachDiv.length == 0 || !eachDiv) {  return  location.reload() }
+        if(eachDiv.length == 0 || !eachDiv) {  return  shopsArr }
+
+        const skipItem = [ '天猫超市', '天天特卖工厂店', '苏宁易购官方旗舰店', "淘工厂官方店", "百亿补贴官方频道" ]
+        
+        const storedShopsArr = []
+        // 获取 之前爬虫 已存储 的店铺数据
+        const storedShops = await Storage.get('storedShops') || []
+        if(storedShops.length != 0) { 
+            // 合并已有店铺名称
+            storedShopsArr = storedShops.map(item => item.shopName) 
+            skipItem = [...skipItem, ...storedShopsArr]
+        }
+        
         eachDiv.each(function(){
             //1. 获取店铺名
             let shopName = $(this).find('.ShopInfo--TextAndPic--yH0AZfx a').text()
             // 2. 去除指定的店铺  或者重复的
             if(skipItem.includes(shopName)) return
-            // 3. 把已有的店铺名存档
+            // 3. 把新的的店铺名存档
             skipItem.push(shopName)
-            // 4. 存档 店铺名 及url
-            const tempDiv = $(this).find('.Card--doubleCardWrapper--L2XFE73')
-            // if(tempDiv === undefined) return
-            let tempUrl = tempDiv.attr('href')
+            // 4. 存档 店铺 url
+            const tempUrl = $(this).find('.Card--doubleCardWrapper--L2XFE73').attr('href')
+
             // 5. 判断是否是淘宝店铺
             let shopType = ''
             if(tempUrl.includes('item.taobao.com')) {
@@ -46,12 +58,9 @@ const OperateApp = () => {
             }
             tempUrl = `https:${tempUrl}`
             let spm = tempDiv.find('.MainPic--mainPicWrapper--iv9Yv90').attr('data-spm-anchor-id')
-            // console.log("🚀 ~ file: operate.jsx:42 ~ eachDiv.each ~ tempDiv:", tempDiv)
-            // if(spm === undefined) { spm = }
             let shopUrl = `${tempUrl}&spm=${spm}`
             shopsArr.push({shopName, shopUrl, shopType})
         })
-            console.log("🚀 ~ file: operate.jsx:47 ~ eachDiv.each ~ shopsArr:", shopsArr)
             return shopsArr
     }
 
@@ -60,17 +69,19 @@ const OperateApp = () => {
     const visitShopUrl = async () => {
 
         // const allShops = await getAllShops()
-        // if(allShops.length == 0) return
         let allShops = falseRes
+        if(allShops.length == 0) return
         const newAllShops = await Promise.all(
             allShops.map( async item => {
                 if(item.shopType == 'taobao'){
                     // window.open(item.shopUrl)
                     // 一. 获得商品页数据
-                let newItem =  await searchTB(item)
-                return newItem
+                let tbItem =  await searchTB(item)
+                return tbItem
         }else{
-            return item
+            //   如果是天猫店铺
+            let tmItem =  await searchTM(item)
+                return tmItem
         }
 }))
         
@@ -98,11 +109,13 @@ const OperateApp = () => {
         //     console.log("🚀 ~ file: operate.jsx:103 ~ visuialVisit ~ itemPage:", itemPage)
         // }
     useEffect(()=>{
-        if(!(location.host == 's.taobao.com')) return
-        // getAllShops()
-        // filterShops()
-        visitShopUrl()
-        // virtualVisit()
+        // if(location.search == '' || location.host == 'error.taobao.com') return
+        if(location.host == 's.taobao.com') {
+            // getAllShops()
+            // filterShops()
+            visitShopUrl()
+            // virtualVisit()
+        }
     }, [])
 
 

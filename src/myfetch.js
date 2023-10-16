@@ -134,7 +134,7 @@ config = {
         let result = decoder.decode(res);
         resolve(result)
     }else if(rt == 'GBKJSON'){
-        let decoder = new TextDecoder("gbk");
+        let decoder = new TextDecoder("gb2312");
         let result = decoder.decode(res);
         resolve(result)
     }else{
