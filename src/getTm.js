@@ -46,14 +46,24 @@ const searchTM = async (item) => {
     // console.log("🚀 ~ file: getTm.js:35 ~ searchTM ~ asyncUrl:", asyncUrl)
      // 4. 获取异步结果页
      wait(5)
-     let asyncPage = await sendMessage({type: 'myfetch', url: asyncUrl, config: { responseType: 'GBKJSON', method: 'GET',}})
-     console.log("🚀 ~ file: getTm.js:43 ~ searchTM ~ asyncPage:", asyncPage)
-     console.log("🚀 ~ file: getTm.js:40 ~ searchTM ~ asyncPage:length", asyncPage.length)
-    const $ = cheerio.load(asyncPage);
-     let itemDiv = $('.skin-box-bd .J_TItems .items')
-     console.log("🚀 ~ file: getTm.js:47 ~ searchTM ~ itemDiv:", itemDiv)
-     let num = itemDiv.length
-     console.log("🚀 ~ file: getTm.js:47 ~ searchTM ~ num:", num)
+     let asyncPage = await sendMessage({type: 'myfetch', url: asyncUrl, config: { responseType: 'GBKJSON', method: 'GET'}})
+     // 移除编码反义问题
+    //  asyncPage = asyncPage.replace('\"', '"')
+    //  console.log("🚀 ~ file: getTm.js:43 ~ searchTM ~ asyncPage:", asyncPage)
+    // const $ = cheerio.load(asyncPage);
+    //  let itemDiv = $('.skin-box-bd .J_TItems .items')
+    //  console.log("🚀 ~ file: getTm.js:47 ~ searchTM ~ itemDiv:", itemDiv)
+    //  let num = itemDiv.length
+    const num = asyncPage.match(/(?<=<dl class=)(?=\\"item \\")/g).length
+    //  console.log("🚀 ~ file: getTm.js:47 ~ searchTM ~ num:", num)
+    item.num = num
+    if(num){
+        //  如果能走到这里,说明拿到了店铺数据, 存入storage
+        const storedShops = await Storage.get('storedShops') || []
+        storedShops.push(item)
+        await Storage.set({storedShops})
+    }
+    
     return item
     }else if (typeof itemPage === 'object') {
     if(itemPage.ret){ 

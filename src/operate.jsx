@@ -9,8 +9,16 @@ import searchTM from './getTm'
 const OperateApp = () => {
     
     const goToBottomEase = async () =>  window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'})
+    // 异步等待
     const wait = async (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-
+    //将指定项转移到最后一项,返回指定向的value index不能为0
+    const toLast =  (arr, index) =>  {
+        if(index == 0) {
+            arr.push(arr.shift())
+        }else{
+            arr.push(arr.splice(index , 1)[0])
+        }
+    }
 
     // 一, 爬取所有店铺信息
     const getAllShops = async () => {
@@ -24,16 +32,12 @@ const OperateApp = () => {
         // if(eachDiv.length == 0 || !eachDiv) {  return  location.reload() }
         if(eachDiv.length == 0 || !eachDiv) {  return  shopsArr }
 
-        const skipItem = [ '天猫超市', '天天特卖工厂店', '苏宁易购官方旗舰店', "淘工厂官方店", "百亿补贴官方频道" ]
-        
-        const storedShopsArr = []
+        let  skipItem = [ '天猫超市', '天天特卖工厂店', '苏宁易购官方旗舰店', "淘工厂官方店", "百亿补贴官方频道" ]
+        // skipItem1 = skipItem1.map(item => {return {shopName: item}})
+
+
         // 获取 之前爬虫 已存储 的店铺数据
         const storedShops = await Storage.get('storedShops') || []
-        if(storedShops.length != 0) { 
-            // 合并已有店铺名称
-            storedShopsArr = storedShops.map(item => item.shopName) 
-            skipItem = [...skipItem, ...storedShopsArr]
-        }
         
         eachDiv.each(function(){
             //1. 获取店铺名
@@ -42,6 +46,18 @@ const OperateApp = () => {
             if(skipItem.includes(shopName)) return
             // 3. 把新的的店铺名存档
             skipItem.push(shopName)
+
+            // 判断之前是否爬取过此店铺
+            let storedShopsLength = storedShops.length
+            if(storedShopsLength > 1) { 
+                for(let i = 0; i< storedShopsLength; i++){
+                    // 如果之前爬取过, 将此项转移到数组最后
+                    if(shopName == storedShops[i].shopName){   
+                        shopsArr.push(storedShops[i])
+                        // toLast(storedShops, i)
+                }
+            }
+        }
             // 4. 存档 店铺 url
             const tempUrl = $(this).find('.Card--doubleCardWrapper--L2XFE73').attr('href')
 
@@ -61,7 +77,10 @@ const OperateApp = () => {
             let shopUrl = `${tempUrl}&spm=${spm}`
             shopsArr.push({shopName, shopUrl, shopType})
         })
-            return shopsArr
+
+        // 爬取列完列表  最后存储新的顺序  storage  也就是将当前爬取过的店铺信息  放到storage数组最后
+        await Storage.set({storedShops})
+        return shopsArr
     }
 
 
@@ -69,10 +88,13 @@ const OperateApp = () => {
     const visitShopUrl = async () => {
 
         // const allShops = await getAllShops()
+        // 
         let allShops = falseRes
         if(allShops.length == 0) return
         const newAllShops = await Promise.all(
             allShops.map( async item => {
+                // 如果num存在说明是之前爬取过的  所以直接掠过
+                if(item.num) return item
                 if(item.shopType == 'taobao'){
                     // window.open(item.shopUrl)
                     // 一. 获得商品页数据
@@ -84,30 +106,39 @@ const OperateApp = () => {
                 return tmItem
         }
 }))
-        
-            console.log("🚀 ~ file: operate.jsx:83 ~ visitShopUrl ~ newAllShops:", newAllShops)
-
-
+        return newAllShops
         }
 
 
-        // 2. 如果是天猫店铺
+       // 四, 获取完整  数量  数据 之后, 重新遍历dom列表
+       const forCycleDom = async () => {
+        //  获取所有带num结果的 结果 数组
+            const newAllShops = await visitShopUrl()
+            const  eachDiv = $('.Content--content--sgSCZ12 .Content--contentInner--QVTcU0M > div')
+            eachDiv.each(async function(){
+                let shopName = $(this).find('.ShopInfo--TextAndPic--yH0AZfx a').text()
+                await Promise.all(
+                    newAllShops.map( async (item) => {
+                        if(item.shopName == shopName){
+                            // 边框高亮
+                            $(this).css({'style': 'border: 2px solid red; position: relative'})
+                            let dom = `
+                            <div style="
+                                background: #ffffff;
+                                position: absolute;
+                                bottom: 45px;
+                                right: 10px;
+                                color: red;
+                            ">店铺商品总数:${item.num}</div>`
+                            $(this).find('.ShopInfo--shopInfo--ORFs6rK ').after(dom)
+                        }
+                    })
+                    )
 
-        // let res = await sendMessage({type: 'myfetch', config: {url: testUrl, responseType: 'TEXT'}})
-        // console.log("🚀 ~ file: operate.jsx:52 ~ visitShopUrl ~ res:", res)
-        // return 
-        // const $ = cheerio.load(falseRes);
-        // let checkErr = $('title').text().includes('您查看的页面找不到了!')
-        // if(checkErr) return alert('请登录账号后重试!')
-        // console.log("🚀 ~ file: operate.jsx:56 ~ visitShopUrl ~ checkErr:", checkErr)
+            })
 
 
-
-        // const virtualVisit = async()=>{
-        //     let shopUrl = 'https://item.taobao.com/item.htm?id=672002374556&ns=1&abbucket=6&spm=a21n57.1.0.i3.4bff523cTNRfaU'
-        //     let itemPage = await sendMessage({type: 'myfetch', url: shopUrl, config: { responseType: 'GBKHTML', method: 'GET', headers: { 'Referer': 'https://s.taobao.com/'}}})
-        //     console.log("🚀 ~ file: operate.jsx:103 ~ visuialVisit ~ itemPage:", itemPage)
-        // }
+       }
     useEffect(()=>{
         // if(location.search == '' || location.host == 'error.taobao.com') return
         if(location.host == 's.taobao.com') {
