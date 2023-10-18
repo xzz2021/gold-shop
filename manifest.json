@@ -7,7 +7,7 @@
     "service_worker": "background.js" 
   },
   "permissions": ["storage", "activeTab", "tabs","scripting", "cookies"],
-  "host_permissions": ["*://*.tmall.com/*"],
+  "host_permissions": ["*://*.tmall.com/*", "*://*.taobao.com/*"],
   "action": {
     "default_title": "popup.html",
     "default_icon": "logo.png",

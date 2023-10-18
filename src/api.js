@@ -10,11 +10,7 @@ const sendMessage =  (message) => {
 }
 
 
-/*
- * @Date: 2022-10-05 09:17:58
- * @LastEditors: xzz
- * @LastEditTime: 2023-03-14 14:27:21
- */
+
 const Storage = {
     // 可以直接存储和获取js数据obj等
 
@@ -75,7 +71,55 @@ const Storage = {
 
 }
 
-export  { sendMessage, Storage }
+class myCookies  {
+    get(){
+        let cookies = document.cookie
+        let arr = cookies.split('; ')
+        let cookieToObj = {}
+        arr.forEach(item => {
+            let arr2 = item.split('=')
+            cookieToObj = {...cookieToObj, ...{[arr2[0]]:arr2[1] }} 
+        })
+        return cookieToObj
+    }
+    removeAll(){
+        let cookieToObj = this.get()
+        cookieToObj.keys.forEach(key => {
+
+        })
+        
+    }
+}
+
+
+
+const  injectFile = () => {
+    //----参考------https://stackoverflow.com/questions/9515704/use-a-content-script-to-access-the-page-context-variables-and-functions/9517879#9517879
+        const s = document.createElement('script')
+        s.src = chrome.runtime.getURL('/inject.js')
+        s.onload = function() {
+            this.remove()
+        };//--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<-------此处分号不可去掉--------应该是立即执行函数必须以分号分隔------
+        (document.head || document.documentElement).appendChild(s) // ------document.documentElement----指向html标签
+
+}
+
+
+    //  存储列表
+    const storeShops = async (item) => {
+            //  如果能走到这里,说明拿到了店铺数据, 存入storage
+            const storedShops = await Storage.get('storedShops') || []
+            await Promise.all(
+                storedShops.map(async item2 => {
+                    if(item2.shopName === item.shopName) return
+                    storedShops.push(item)
+                    await Storage.set({storedShops})
+                })
+            
+            )
+        }
+
+export  { sendMessage, Storage, injectFile, storeShops }
 
 
 
