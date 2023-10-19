@@ -9,7 +9,7 @@ const sendMessage =  (message) => {
     })
 }
 
-
+const wait = async (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
 const Storage = {
     // 可以直接存储和获取js数据obj等
@@ -119,7 +119,7 @@ const  injectFile = () => {
             )
         }
 
-export  { sendMessage, Storage, injectFile, storeShops }
+export  { sendMessage, Storage, injectFile, storeShops, wait }
 
 
 

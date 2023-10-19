@@ -1,20 +1,20 @@
 //  此处封装获取淘宝店铺  商品数量方法
 
 import * as cheerio from 'cheerio'
-import  {sendMessage, storeShops}  from './api'
+import  {sendMessage, storeShops, wait}  from './api'
 
 // item ={shopName, shopUrl, shopType}
-const wait = async (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+
 
 const searchTB = async (item) => {
     await wait(5)
     const {shopName, shopUrl, shopType} = item
     // 1. 获得商品页数据
-    // const headers = {
-    //     Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    //     }
-    let itemPage = await sendMessage({type: 'myfetch', url: shopUrl, config: { responseType: 'GBKHTML', method: 'GET'}})
-    console.log("🚀 ~ file: getTb.js:17 ~ searchTB ~ itemPage:", itemPage)
+ const headers = {
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        }
+    let itemPage = await sendMessage({type: 'myfetch', url: shopUrl, config: { responseType: 'GBKHTML', method: 'GET', headers}})
+    // console.log("🚀 ~ file: getTb.js:17 ~ searchTB ~ itemPage:", itemPage)
     //出现滑块验证
    /* <script>sessionStorage.x5referer = window.location.href;
    window.location.replace("https://item.taobao.com//item.htm/_____tmd__2fSUem.htm&x5step=1");
@@ -51,8 +51,10 @@ const searchTB = async (item) => {
         const searchUrl = `https:${shopUrl}/search.htm`
 
         // 3.  获得搜索页结果后  
-        await wait(3)
+        await wait(5)
         let searchPage = await sendMessage({type: 'myfetch', url: searchUrl, config: { responseType: 'GBKHTML', method: 'GET',}})
+        console.log("🚀 ~ file: getTb.js:56 ~ searchTB ~ searchPage:", searchPage)
+        console.log("🚀 ~ file: getTb.js:56 ~ searchTB ~ searchPage:22222222222222")
         try {
             searchPage = JSON.parse(searchPage)
             
@@ -65,24 +67,15 @@ const searchTB = async (item) => {
             if(searchPage.ret){
                 console.log("🚀 ~ file: getTb.js:44 ~ searchTB ~ 请求过于频繁:",searchPage)
                 let url = searchPage.data.url
-                 console.log("🚀 ~ file: getTb.js:49 ~ searchTB ~ url:", url)
-                 setTimeout(() => {
                     window.location.replace(url)
-                  }, 2000);
                 }
                 if(searchPage.url) {
                     // 无法加载   过于频繁
-                    setTimeout(() => {
                         window.location.replace(searchPage.url)
-                      }, 2000);
                     //   if(searchPage.url.includes('login.taobao.com')){
                     //     //需要登录
                     //   }
                 }
-                //移除cookies
-                // document.cookie = ''
-                // localStorage.clear()
-                // throw new Error('请求过于频繁')
                 return item
         } 
         // 3.1   还需 获取 异步数据  "/i/asynSearch.htm?input_charset=gbk&mid=w-2790737131-0&wid=2790737131&path=/search.htm&amp;search=y"
@@ -92,8 +85,9 @@ const searchTB = async (item) => {
         asyncUrl = `https:${shopUrl}${asyncUrl}`
         // 4. 获取异步结果页
 
-        await wait(3)
+        await wait(5)
         let asyncPage = await sendMessage({type: 'myfetch', url: asyncUrl, config: { responseType: 'GBKJSON', method: 'GET'}})
+         console.log("🚀 ~ file: getTb.js:89 ~ searchTB ~ asyncPage:33333333333333")
          // 提取商品数字
         let strNum = asyncPage.match(/(?<=共搜索到<span>).*(?=<\/span>个符合条件的商品)/)
         strNum = strNum == null? null : strNum[0]

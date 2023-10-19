@@ -1,7 +1,7 @@
 
 
 #injectReact{
-    position: fixed;
+    /* position: fixed; */
     top: 200px;
     left: 20px;
     z-index: 9999;

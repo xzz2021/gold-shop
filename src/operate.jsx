@@ -5,12 +5,10 @@ import { useEffect } from 'react';
 import falseRes from './test copy'
 import searchTB from './getTb'
 import searchTM from './getTm'
-import { Storage } from './api'
+import { Storage, wait } from './api'
 const OperateApp = () => {
     
     const goToBottomEase = async () =>  window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'})
-    // 异步等待
-    const wait = async (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
     // 一, 爬取所有店铺信息
     const getAllShops = async () => {
@@ -29,7 +27,8 @@ const OperateApp = () => {
         // 获取 之前爬虫 已存储 的店铺数据
         const storedShops = await Storage.get('storedShops') || []
         
-        eachDiv = eachDiv.slice(0, 10)
+        eachDiv = eachDiv.slice(4,7)
+        console.log("🚀 ~ file: operate.jsx:31 ~ getAllShops ~ eachDiv:", eachDiv)
         eachDiv.each(function(){
             //1. 获取店铺名
             const shopName = $(this).find('.ShopInfo--TextAndPic--yH0AZfx a').text()
@@ -97,9 +96,10 @@ const OperateApp = () => {
     // 二, 模拟访问店铺   拿到所有num
     const visitShopUrl = async () => {
 
-        // const shopsArr = await getAllShops()
+        const shopsArr = await getAllShops()
+        console.log("🚀 ~ file: operate.jsx:100 ~ visitShopUrl ~ shopsArr:", shopsArr)
         // 
-        let shopsArr = falseRes
+        // let shopsArr = falseRes
         if(shopsArr.length == 0) return
         const newShopsArr = await Promise.all(
             shopsArr.map( async item => {
@@ -117,6 +117,7 @@ const OperateApp = () => {
         }
 }))
 console.log("🚀 ~ file: operate.jsx:120 ~ visitShopUrl ~ newShopsArr:", newShopsArr)
+
         return newShopsArr
         }
 
@@ -130,7 +131,7 @@ console.log("🚀 ~ file: operate.jsx:120 ~ visitShopUrl ~ newShopsArr:", newSho
                 let shopName = $(this).find('.ShopInfo--TextAndPic--yH0AZfx a').text()
                 await Promise.all(
                     newShopsArr.map( async item => {
-                        if(item.shopName == shopName && item.num < 10 ){
+                        if(item.shopName == shopName && item.num < 1000 ){
                             // 边框高亮
                             $(this).css({'style': 'border: 2px solid red; position: relative'})
                             let dom = `
@@ -147,21 +148,23 @@ console.log("🚀 ~ file: operate.jsx:120 ~ visitShopUrl ~ newShopsArr:", newSho
                     )
 
             })
-
+            displaySto()
 
        }
 
        const  displaySto = async () => {
+        await wait(30)
         const storedShops = await Storage.get('storedShops') || []
         console.log("🚀 ~ file: operate.jsx:159 ~ useEffect ~ storedShops:", storedShops)
        }
     useEffect(()=>{
+        
         // if(location.search == '' || location.host == 'error.taobao.com') return
         if(location.host == 's.taobao.com') {
             // getAllShops()
             // filterShops()
             // visitShopUrl()
-            displaySto()
+            // displaySto()
             // forCycleDom()
             // Storage.remove('storedShops')
         }

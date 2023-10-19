@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import OperateApp from "./operate"
+import  {sendMessage, Storage, storeShops, wait}  from './api'
 
 function App() {
   // $('#App').
@@ -12,7 +13,17 @@ function App() {
     setItemsValue(currentValue)
 
   },[])
-  const confirm = () => {
+  const confirm = async() => {
+    const headers = {
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+      }
+      // let searchUrl = 'https://shop136753256.taobao.com/search.htm?spm=2013.1.0.0.65724178D8Pq3j&search=y'
+      let searchUrl = 'https://shop136753256.taobao.com/search.htm'
+    let searchPage = await sendMessage({type: 'myfetch', url: searchUrl, config: { responseType: 'GBKHTML', method: 'GET',headers}})
+    console.log("🚀 ~ file: app.jsx:17 ~ confirm ~ searchPage:", searchPage)
+
+
+    return
     localStorage.setItem('itemsValue', inputValue)
     setItemsValue(inputValue)
     setInputValue('')

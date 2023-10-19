@@ -33,18 +33,17 @@ if(DEBUG){   // 开发模式时为真   //   生产模式为假
           }
             
           )
-         });
-         
+         })
      }
    )
     }
 
+    // clearCookie()
 
-
-  chrome.cookies.getAll(
-    {domain: ".taobao.com"},
-    cookies => {
-        console.log("🚀 ~ file: operate.jsx:169 ~ useEffect ~ cookies:4444", cookies)
+  // chrome.cookies.getAll(
+  //   {domain: ".taobao.com"},
+  //   cookies => {
+  //       console.log("🚀 ~ file: operate.jsx:169 ~ useEffect ~ cookies:4444", cookies)
         
-    }
-  )
+  //   }
+  // )
